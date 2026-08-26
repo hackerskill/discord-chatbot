@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from openrouter import OpenRouter
 import discord
 from discord import app_commands
+import asyncio
 
 load_dotenv()
  
@@ -15,6 +16,8 @@ client = discord.Client(intents=intents)
 tree= app_commands.CommandTree(client)
 
 current_model = "nvidia/nemotron-3.5-lightning:free"
+
+conversation=[]
 
 @client.event
 async def on_ready():
@@ -41,19 +44,18 @@ async def on_message(message):
 
         return
 
-
-    response = ai_client.chat.send(
-    model="nvidia/nemotron-3.5-lightning:free", #currently model is hardcoded, should be updated later
-    messages=[
-        {"role": "user", "content": message.content}
-    ],
-    max_tokens=2000,
-    stream=False,
+    conversation.append({"role": "user", "content": message.content})
+# here the request is sent to open router
+    response = await asyncio.to_thread(
+        ai_client.chat.send,
+        model=current_model, #currently model is hardcoded, should be updated later
+        messages=conversation,
+        max_tokens=2000,
+        stream=False,
     )
+
+    conversation.append({"role": "assistant", "content": response.choices[0].message.content})
     print("hello, world")
-    #print(response.choices[0].message.content)
-
     await message.channel.send(response.choices[0].message.content)
-
 
 client.run(token)
