@@ -45,13 +45,14 @@ async def on_message(message):
         return
 
     conversation.append({"role": "user", "content": message.content})
+    async with message.channel.typing(): #typing affect
 # here the request is sent to open router
-    response = await asyncio.to_thread(
-        ai_client.chat.send,
-        model=current_model, #currently model is hardcoded, should be updated later
-        messages=conversation,
-        max_tokens=2000,
-        stream=False,
+        response = await asyncio.to_thread(
+            ai_client.chat.send,
+            model=current_model, #currently model is hardcoded, should be updated later
+            messages=conversation,
+            max_tokens=2000,
+            stream=False,
     )
 
     conversation.append({"role": "assistant", "content": response.choices[0].message.content})
