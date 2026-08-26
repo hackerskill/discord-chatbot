@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 from openrouter import OpenRouter
 import discord
+from discord import app_commands
 
 load_dotenv()
  
@@ -11,9 +12,13 @@ intents = discord.Intents.default()
 intents.message_content = True
 
 client = discord.Client(intents=intents)
+tree= app_commands.CommandTree(client)
+
+current_model = "nvidia/nemotron-3.5-lightning:free"
 
 @client.event
 async def on_ready():
+    await tree.sync()
     print(f"Logged in as {client.user}")
 
 ai_client = OpenRouter(
@@ -42,7 +47,7 @@ async def on_message(message):
     messages=[
         {"role": "user", "content": message.content}
     ],
-    max_tokens=1000,
+    max_tokens=2000,
     stream=False,
     )
     print("hello, world")
