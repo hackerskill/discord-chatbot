@@ -29,6 +29,41 @@ ai_client = OpenRouter(
     server_url=os.getenv("server_url"),
 )
 
+@tree.command(name="ping", description="Ping the bot to check connection")
+async def ping(interaction: discord.Interaction):
+    await interaction.response.send_message("Pong!")
+
+@tree.command(name="clear", description="clearing the bot's messages")
+async def clear(interaction: discord.Interaction):
+    await interaction.response.send_message("Clearing messages...")
+    async for msg in interaction.channel.history(limit=100):
+                if msg.author == client.user:
+                    await msg.delete()
+
+@tree.command(name="model", description="change the model used by the bot")
+@app_commands.choices(
+    model=[
+        app_commands.Choice(name="nvidia/nemotron-3.5-lightning:free", value="nvidia/nemotron-3.5-lightning:free"),
+        app_commands.Choice(name="z-ai/glm-5.2:free", value="z-ai/glm-5.2:free"),
+        app_commands.Choice(name="nvidia/nemotron-3-ultra-550b-a55b:free", value="nvidia/nemotron-3-ultra-550b-a55b:free"),
+    ]
+)
+async def model(interaction: discord.Interaction, model: app_commands.Choice[str]):
+    await interaction.response.send_message("Choosing model...")
+    await interaction.followup.send(f"Model name: {model.value}")
+    global current_model
+    current_model = model.value
+    print(f"Model changed to: {current_model}")
+
+@tree.command(name="model_info", description="Get information about the current AI model")
+async def model_info(interaction: discord.Interaction):
+    await interaction.response.send_message(f"Current model: {current_model}")
+
+@tree.command(name="about", description="Get information about this chatbot")
+async def about(interaction: discord.Interaction):
+    await interaction.response.send_message("This is a discord chatbot, built as a wrapper around openrouter api, where variety of AI models can be directly accessed from discord chats."
+    "\n\n_Built by hackerskills_")
+
 @client.event
 async def on_message(message):
 
@@ -36,16 +71,9 @@ async def on_message(message):
         return 
     #ignored bot's own messages to stop looping
 
-    if message.content == "!clear": #for clearing bot chat
-
-        async for msg in message.channel.history(limit=100):
-            if msg.author == client.user:
-                await msg.delete()
-
-        return
-
     conversation.append({"role": "user", "content": message.content})
     async with message.channel.typing(): #typing affect
+        print("sending request to open router")
 # here the request is sent to open router
         response = await asyncio.to_thread(
             ai_client.chat.send,
