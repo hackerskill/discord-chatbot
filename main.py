@@ -18,6 +18,7 @@ tree= app_commands.CommandTree(client)
 current_model = "nvidia/nemotron-3.5-lightning:free"
 
 conversation=[]
+tokens_limit=2000
 
 @client.event
 async def on_ready():
@@ -55,9 +56,17 @@ async def model(interaction: discord.Interaction, model: app_commands.Choice[str
     current_model = model.value
     print(f"Model changed to: {current_model}")
 
-@tree.command(name="model_info", description="Get information about the current AI model")
-async def model_info(interaction: discord.Interaction):
-    await interaction.response.send_message(f"Current model: {current_model}")
+@tree.command(name="bot_info", description="Get information about current state of chatbot")
+async def bot_info(interaction: discord.Interaction):
+    await interaction.response.send_message(f"Current model: {current_model}\nMax. tokens: {tokens_limit}\nConversation length: {len(conversation)}")
+
+@tree.command(name="max_tokens", description="adjust max tokens for AI model")
+async def max_tokens(interaction: discord.Interaction, tokens: int):
+    await interaction.response.send_message("adjusting max tokens...")
+    await interaction.followup.send(f"Max. tokens: {tokens}")
+    global tokens_limit
+    tokens_limit = tokens
+    print(f"Max. tokens changed to: {tokens_limit}")
 
 @tree.command(name="about", description="Get information about this chatbot")
 async def about(interaction: discord.Interaction):
@@ -79,7 +88,7 @@ async def on_message(message):
             ai_client.chat.send,
             model=current_model, #currently model is hardcoded, should be updated later
             messages=conversation,
-            max_tokens=2000,
+            max_tokens=tokens_limit,
             stream=False,
     )
 
