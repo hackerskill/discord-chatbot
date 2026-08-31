@@ -32,14 +32,17 @@ ai_client = OpenRouter(
 
 @tree.command(name="ping", description="Ping the bot to check connection")
 async def ping(interaction: discord.Interaction):
-    await interaction.response.send_message("Pong!")
+    latency = round(client.latency * 1000)
+    await interaction.response.send_message(f"Pong! Latency: {latency} ms")
 
 @tree.command(name="clear", description="clearing the bot's messages")
-async def clear(interaction: discord.Interaction):
+async def clear(interaction: discord.Interaction, clear: int):
     await interaction.response.send_message("Clearing messages...")
-    async for msg in interaction.channel.history(limit=100):
+    async for msg in interaction.channel.history(limit=clear):
                 if msg.author == client.user:
                     await msg.delete()
+    global conversation
+    conversation=[]
 
 @tree.command(name="model", description="change the model used by the bot")
 @app_commands.choices(

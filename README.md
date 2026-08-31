@@ -11,6 +11,14 @@ An AI wrapper in form of a discord bot
 * **Slash Commands** — Short commands for controlling the bot.
 * **Typing Indicator** — Shows when the bot is thinking.
 
+## Slash Commands
+* **ping** — Check chatbot connnectivity status.
+* **model** — Change the AI model from options presented.
+* **max_tokens** — Adjust the maximum tokens response can have.
+* **bot_info** — See info about current bot settings like model and conversation history.
+* **clear** — Clear recent messages by chatbot.
+* **about** — Shows some info about the bot itself.
+
 ## Setup
 
 1. Get API keys for Discord bot at [Discord Developer Portal](https://discord.com/developers/) and AI gateway.
