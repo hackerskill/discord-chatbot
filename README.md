@@ -1,5 +1,5 @@
 # discord-chatbot
-An AI wrapper in form of a discord bot
+An AI wrapper in the form of a discord bot
 
 ## Features
 * **AI Chat** — Directly send prompts to an AI model from Discord.
@@ -12,12 +12,12 @@ An AI wrapper in form of a discord bot
 * **Typing Indicator** — Shows when the bot is thinking.
 
 ## Slash Commands
-* **ping** — Check chatbot connnectivity status.
-* **model** — Change the AI model from options presented.
-* **max_tokens** — Adjust the maximum tokens response can have.
-* **bot_info** — See info about current bot settings like model and conversation history.
-* **clear** — Clear recent messages by chatbot.
-* **about** — Shows some info about the bot itself.
+* **`ping`** — Check chatbot connectivity status.
+* **`model`** — Change the AI model from options presented.
+* **`max_tokens`** — Adjust the maximum number of tokens a response can have.
+* **`bot_info`** — See info about current bot settings like model and conversation history.
+* **`clear`** — Clear recent messages by chatbot.
+* **`about`** — Shows information about the bot itself.
 
 ## Setup
 
@@ -50,9 +50,9 @@ An AI wrapper in form of a discord bot
 
 Before running the main application, you can optionally test your API key or discord token connections or AI model using the utility scripts provided:
 
-* **`discord_test.py`** — Validates your discord token connection wherin any message sent to bot is relayed back as echo test.
+* **`discord_test.py`** — Validates your discord token connection wherein any message sent to bot is relayed back as echo test.
 * **`model_test.py`** - Verifies your API key setup and communication with the AI service with a hardcoded model and prompt.
-* **`ai_test.py`** — Testing models and context conversation flow.
+* **`ai_test.py`** — Tests different models and conversation context..
 
 ### Running the Application
 
