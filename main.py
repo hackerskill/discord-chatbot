@@ -58,7 +58,7 @@ async def model(interaction: discord.Interaction, model: app_commands.Choice[str
 
 @tree.command(name="bot_info", description="Get information about current state of chatbot")
 async def bot_info(interaction: discord.Interaction):
-    await interaction.response.send_message(f"Current model: {current_model}\nMax. tokens: {tokens_limit}\nConversation length: {len(conversation)}")
+    await interaction.response.send_message(f"Current model: {current_model}\nMax. tokens: {tokens_limit}\nConversation length: {len(conversation)}({int(len(conversation)/2)} each)")
 
 @tree.command(name="max_tokens", description="adjust max tokens for AI model")
 async def max_tokens(interaction: discord.Interaction, tokens: int):
