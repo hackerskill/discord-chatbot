@@ -23,7 +23,7 @@ tokens_limit=2000
 @client.event
 async def on_ready():
     await tree.sync()
-    print(f"Logged in as {client.user}")
+    print(f"Logged in as {client.user}", flush=True)
 
 ai_client = OpenRouter(
     api_key=os.getenv("api_key"),
@@ -58,7 +58,7 @@ async def model(interaction: discord.Interaction, model: app_commands.Choice[str
     await interaction.followup.send(f"Model name: {model.value}")
     global current_model
     current_model = model.value
-    print(f"Model changed to: {current_model}")
+    print(f"Model changed to: {current_model}", flush=True)
 
 @tree.command(name="bot_info", description="Get information about current state of chatbot")
 async def bot_info(interaction: discord.Interaction):
@@ -70,7 +70,7 @@ async def max_tokens(interaction: discord.Interaction, tokens: int):
     await interaction.followup.send(f"Max. tokens: {tokens}")
     global tokens_limit
     tokens_limit = tokens
-    print(f"Max. tokens changed to: {tokens_limit}")
+    print(f"Max. tokens changed to: {tokens_limit}", flush=True)
 
 @tree.command(name="about", description="Get information about this chatbot")
 async def about(interaction: discord.Interaction):
@@ -87,16 +87,17 @@ async def on_message(message):
     conversation.append({"role": "user", "content": message.content})
 
     try:
-        async with message.channel.typing(): #typing affect
-            print("sending request to open router")
-    # here the request is sent to open router
-            response = await asyncio.to_thread(
-                ai_client.chat.send,
-                model=current_model, #currently model is hardcoded, should be updated later
-                messages=conversation,
-                max_tokens=tokens_limit,
-                stream=False,
-        )
+        async with asyncio.timeout(60):
+            async with message.channel.typing(): #typing affect
+                print("sending request to open router", flush=True)
+        # here the request is sent to open router
+                response = await asyncio.to_thread(
+                    ai_client.chat.send,
+                    model=current_model, #currently model is hardcoded, should be updated later
+                    messages=conversation,
+                    max_tokens=tokens_limit,
+                    stream=False,
+            )
     except TimeoutError:
         print("AI request timed out", flush=True)
         await message.channel.send("Request timed out. Please try again later.")
@@ -107,7 +108,7 @@ async def on_message(message):
         await message.channel.send("An error occurred while processing your request. Please try again later.")  
 
     conversation.append({"role": "assistant", "content": response.choices[0].message.content})
-    print("hello, world")
+    print("hello, world", flush=True)
     await message.channel.send(response.choices[0].message.content)
 
 client.run(token)
