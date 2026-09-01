@@ -48,8 +48,9 @@ async def clear(interaction: discord.Interaction, clear: int):
 @app_commands.choices(
     model=[
         app_commands.Choice(name="nvidia/nemotron-3.5-lightning:free", value="nvidia/nemotron-3.5-lightning:free"),
+        app_commands.Choice(name="qwen/qwen3.8-flash", value="qwen/qwen3.8-flash"),
         app_commands.Choice(name="z-ai/glm-5.2:free", value="z-ai/glm-5.2:free"),
-        app_commands.Choice(name="nvidia/nemotron-3-ultra-550b-a55b:free", value="nvidia/nemotron-3-ultra-550b-a55b:free"),
+        app_commands.Choice(name="z-ai/glm-5.3-flash", value="z-ai/glm-5.3-flash"),
     ]
 )
 async def model(interaction: discord.Interaction, model: app_commands.Choice[str]):
@@ -84,16 +85,26 @@ async def on_message(message):
     #ignored bot's own messages to stop looping
 
     conversation.append({"role": "user", "content": message.content})
-    async with message.channel.typing(): #typing affect
-        print("sending request to open router")
-# here the request is sent to open router
-        response = await asyncio.to_thread(
-            ai_client.chat.send,
-            model=current_model, #currently model is hardcoded, should be updated later
-            messages=conversation,
-            max_tokens=tokens_limit,
-            stream=False,
-    )
+
+    try:
+        async with message.channel.typing(): #typing affect
+            print("sending request to open router")
+    # here the request is sent to open router
+            response = await asyncio.to_thread(
+                ai_client.chat.send,
+                model=current_model, #currently model is hardcoded, should be updated later
+                messages=conversation,
+                max_tokens=tokens_limit,
+                stream=False,
+        )
+    except TimeoutError:
+        print("AI request timed out", flush=True)
+        await message.channel.send("Request timed out. Please try again later.")
+        return
+
+    except Exception as e:
+        print(f"Error occurred: {e}", flush=True)
+        await message.channel.send("An error occurred while processing your request. Please try again later.")  
 
     conversation.append({"role": "assistant", "content": response.choices[0].message.content})
     print("hello, world")
