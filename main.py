@@ -15,9 +15,10 @@ intents.message_content = True
 client = discord.Client(intents=intents)
 tree= app_commands.CommandTree(client)
 
-current_model = "nvidia/nemotron-3.5-lightning:free"
+current_model = "qwen/qwen3.8-flash"
 
 conversation=[]
+lock= asyncio.Lock()
 tokens_limit=2000
 
 @client.event
@@ -47,8 +48,9 @@ async def clear(interaction: discord.Interaction, clear: int):
 @tree.command(name="model", description="change the model used by the bot")
 @app_commands.choices(
     model=[
-        app_commands.Choice(name="nvidia/nemotron-3.5-lightning:free", value="nvidia/nemotron-3.5-lightning:free"),
         app_commands.Choice(name="qwen/qwen3.8-flash", value="qwen/qwen3.8-flash"),
+        app_commands.Choice(name="google/gemini-3.7-flash", value="google/gemini-3.7-flash"),
+        app_commands.Choice(name="nvidia/nemotron-3.5-lightning:free", value="nvidia/nemotron-3.5-lightning:free"),
         app_commands.Choice(name="z-ai/glm-5.2:free", value="z-ai/glm-5.2:free"),
         app_commands.Choice(name="z-ai/glm-5.3-flash", value="z-ai/glm-5.3-flash"),
     ]
@@ -84,31 +86,33 @@ async def on_message(message):
         return 
     #ignored bot's own messages to stop looping
 
-    conversation.append({"role": "user", "content": message.content})
+    async with lock:
+        conversation.append({"role": "user", "content": message.content})
 
-    try:
-        async with asyncio.timeout(60):
-            async with message.channel.typing(): #typing affect
-                print("sending request to open router", flush=True)
-        # here the request is sent to open router
-                response = await asyncio.to_thread(
-                    ai_client.chat.send,
-                    model=current_model, #currently model is hardcoded, should be updated later
-                    messages=conversation,
-                    max_tokens=tokens_limit,
-                    stream=False,
-            )
-    except TimeoutError:
-        print("AI request timed out", flush=True)
-        await message.channel.send("Request timed out. Please try again later.")
-        return
+        try:
+            async with asyncio.timeout(60):
+                async with message.channel.typing(): #typing affect
+                    print("sending request to open router", flush=True)
+            # here the request is sent to open router
+                    response = await asyncio.to_thread(
+                        ai_client.chat.send,
+                        model=current_model, #currently model is hardcoded, should be updated later
+                        messages=conversation,
+                        max_tokens=tokens_limit,
+                        stream=False,
+                )
+        except TimeoutError:
+            print("AI request timed out", flush=True)
+            await message.channel.send("Request timed out. Please try again later.")
+            return
 
-    except Exception as e:
-        print(f"Error occurred: {e}", flush=True)
-        await message.channel.send("An error occurred while processing your request. Please try again later.")  
+        except Exception as e:
+            print(f"Error occurred: {e}", flush=True)
+            await message.channel.send("An error occurred while processing your request. Please try again later.")
+            return
 
-    conversation.append({"role": "assistant", "content": response.choices[0].message.content})
-    print("hello, world", flush=True)
-    await message.channel.send(response.choices[0].message.content)
+        conversation.append({"role": "assistant", "content": response.choices[0].message.content})
+        print("hello, world", flush=True)
+        await message.channel.send(response.choices[0].message.content)
 
 client.run(token)
