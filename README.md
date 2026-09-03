@@ -6,6 +6,7 @@ An AI wrapper in the form of a discord bot
 * **Discord Support** — Works directly in Discord DMs and servers.
 * **Memory** — Remembers previous messages in a conversation.
 * **Multiple AI Models** — Switch between different AI models.
+* **Free and Paid Key Toggle** — Toggle for switching between free and paid key for controlling which models are available in the model switching menu.
 * **Bot Info** — See the current model and settings.
 * **Token Control** — Control the maximum number of tokens in responses.
 * **Slash Commands** — Short commands for controlling the bot.
@@ -42,7 +43,11 @@ An AI wrapper in the form of a discord bot
     * AI gateway API key
     * AI gateway server URL
 
-5. **Install dependencies:**
+5. **Set `key_paid` on following basis-**
+    * If a paid key- `True`
+    * If a free key- `False`
+
+6. **Install dependencies:**
    ```bash
    pip install -r requirements.txt
    ```
