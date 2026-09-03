@@ -15,11 +15,30 @@ intents.message_content = True
 client = discord.Client(intents=intents)
 tree= app_commands.CommandTree(client)
 
-current_model = "qwen/qwen3.8-flash"
+current_model = "liquid/lfm-2.5-2.6b:free"
+key_paid=False
 
 conversation=[]
 lock= asyncio.Lock()
-tokens_limit=2000
+tokens_limit=500
+
+if key_paid:
+    model=[
+        app_commands.Choice(name="qwen/qwen3.8-flash", value="qwen/qwen3.8-flash"),
+        app_commands.Choice(name="google/gemini-3.7-flash", value="google/gemini-3.7-flash"),
+        app_commands.Choice(name="nvidia/nemotron-3.5-lightning:free", value="nvidia/nemotron-3.5-lightning:free"),            app_commands.Choice(name="z-ai/glm-5.2:free", value="z-ai/glm-5.2:free"),
+        app_commands.Choice(name="z-ai/glm-5.3-flash", value="z-ai/glm-5.3-flash"),
+        app_commands.Choice(name="liquid/lfm-2.5-2.6b:free", value="liquid/lfm-2.5-2.6b:free"),
+        app_commands.Choice(name="poolside/laguna-xs-2.1:free", value="poolside/laguna-xs-2.1:free"),
+        app_commands.Choice(name="minimax/minimax-m3:free", value="minimax/minimax-m3:free"),
+        ]
+else:
+    model=[
+        app_commands.Choice(name="nvidia/nemotron-3.5-lightning:free", value="nvidia/nemotron-3.5-lightning:free"),
+        app_commands.Choice(name="liquid/lfm-2.5-2.6b:free", value="liquid/lfm-2.5-2.6b:free"),
+        app_commands.Choice(name="poolside/laguna-xs-2.1:free", value="poolside/laguna-xs-2.1:free"),
+        app_commands.Choice(name="minimax/minimax-m3:free", value="minimax/minimax-m3:free"),
+        ]
 
 @client.event
 async def on_ready():
@@ -46,15 +65,8 @@ async def clear(interaction: discord.Interaction, clear: int):
     conversation=[]
 
 @tree.command(name="model", description="change the model used by the bot")
-@app_commands.choices(
-    model=[
-        app_commands.Choice(name="qwen/qwen3.8-flash", value="qwen/qwen3.8-flash"),
-        app_commands.Choice(name="google/gemini-3.7-flash", value="google/gemini-3.7-flash"),
-        app_commands.Choice(name="nvidia/nemotron-3.5-lightning:free", value="nvidia/nemotron-3.5-lightning:free"),
-        app_commands.Choice(name="z-ai/glm-5.2:free", value="z-ai/glm-5.2:free"),
-        app_commands.Choice(name="z-ai/glm-5.3-flash", value="z-ai/glm-5.3-flash"),
-    ]
-)
+@app_commands.choices(model=model)
+
 async def model(interaction: discord.Interaction, model: app_commands.Choice[str]):
     await interaction.response.send_message("Choosing model...")
     await interaction.followup.send(f"Model name: {model.value}")
@@ -69,10 +81,14 @@ async def bot_info(interaction: discord.Interaction):
 @tree.command(name="max_tokens", description="adjust max tokens for AI model")
 async def max_tokens(interaction: discord.Interaction, tokens: int):
     await interaction.response.send_message("adjusting max tokens...")
-    await interaction.followup.send(f"Max. tokens: {tokens}")
     global tokens_limit
-    tokens_limit = tokens
-    print(f"Max. tokens changed to: {tokens_limit}", flush=True)
+    if tokens < 500:
+        await interaction.followup.send(f"Max. tokens: {tokens}")
+        tokens_limit = tokens
+        print(f"Max. tokens changed to: {tokens_limit}", flush=True)
+    else:
+        await interaction.followup.send(f"Max. tokens: {tokens_limit} (Warning: Maximum tokens allowed is 500 due to discord platform limitations)")
+        print(f"Max. tokens not changed", flush=True)
 
 @tree.command(name="about", description="Get information about this chatbot")
 async def about(interaction: discord.Interaction):
@@ -101,6 +117,7 @@ async def on_message(message):
                         max_tokens=tokens_limit,
                         stream=False,
                 )
+                print("response received from open router", flush=True)
         except TimeoutError:
             print("AI request timed out", flush=True)
             await message.channel.send("Request timed out. Please try again later.")
