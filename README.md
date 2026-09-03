@@ -10,6 +10,7 @@ An AI wrapper in the form of a discord bot
 * **Token Control** — Control the maximum number of tokens in responses.
 * **Slash Commands** — Short commands for controlling the bot.
 * **Typing Indicator** — Shows when the bot is thinking.
+* **Request Queueing** — Handles multiple messages with queueing, without processing them at the same time.
 
 ## Slash Commands
 * **`ping`** — Check chatbot connectivity status.
