@@ -128,6 +128,11 @@ async def on_message(message):
             await message.channel.send("An error occurred while processing your request. Please try again later.")
             return
 
+        if not response.choices or not response.choices[0].message:
+            print("No valid response received from OpenRouter", flush=True)
+            await message.channel.send("No valid response received from the AI model. Please try again later.")
+            return
+
         conversation.append({"role": "assistant", "content": response.choices[0].message.content})
         print("hello, world", flush=True)
         await message.channel.send(response.choices[0].message.content)
